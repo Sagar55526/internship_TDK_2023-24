@@ -8,7 +8,7 @@
 - Built a **Flask-based web server** to allow network-wide access to real-time data via browser
 - Helped improve monitoring transparency on the shop floor
 
-📍 ### Learn more → [PLC Snap7 & Flask Project](./plc-snap7-flask/README.md)
+📍 Learn more → [`PLC Programming/README.md`](./PLC-Programming\README.md)
 
 ---
 
