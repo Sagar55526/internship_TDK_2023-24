@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+
+<div class="container mt-5" style="width: 74%;">
+    <div class="row" style="text-align: center;">
+        <div class="col">
+            <h1>Real time plotting</h1>
+        </div>
+    </div>
+    <div class="row p-3" style="text-align: center;">
+        <div class="col">
+            <h1 class="badge text-bg-info" id="predictedValue" style="font-size: larger;"></h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div id="plot-container">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function() {
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Actual Values',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    pointRadius: 0
+                }, {
+                    label: 'Best-Fit Line',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0
+                }, {
+                    label: 'Predicted Value',
+                    data: [],
+                    backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                    borderColor: 'rgba(0, 255, 0, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(0, 255, 0, 1)',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        min: 0,
+                        max: 50
+                    }
+                }
+            }
+        });
+
+        function fetchData() {
+            $.ajax({
+                url: 'http://localhost:5000/data',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    console.log('Received data:', data);
+
+                    if (data.timestamps && data.values) {
+                        updateChart(myChart, data);
+                        updatePredictedValue(data.predicted_value);
+                    } else {
+                        console.warn('Data is missing timestamps or values.');
+                    }
+                },
+                error: function(error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        }
+
+        function updatePredictedValue(value) {
+            var predictedValueElement = document.getElementById('predictedValue');
+            if (predictedValueElement) {
+                predictedValueElement.textContent = 'Predicted Value: ' + value;
+            }
+        }
+
+        fetchData();
+        setInterval(fetchData, 5000);
+
+        function updateChart(chart, data) {
+            console.log('Updating chart with data:', data);
+
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+            chart.data.datasets[1].data = [];
+            chart.data.datasets[2].data = [];
+
+            if (data.timestamps && data.values) {
+                var numericalTimestamps = data.timestamps.map(function (timestamp) {
+                    return (new Date(timestamp) - new Date(data.timestamps[0])) / 1000;
+                });
+
+                chart.data.labels = numericalTimestamps;
+                chart.data.datasets[0].data = data.values;
+
+                if (data.predictions) {
+                    chart.data.datasets[1].data = data.predictions;
+                }
+
+                if (data.predicted_value !== null) {
+                    var numericalCurrentTimestamp = (new Date(data.predicted_value[0]) - new Date(data.timestamps[0])) / 1000;
+                    chart.data.datasets[2].data = [numericalCurrentTimestamp];
+                }
+            }
+
+            chart.update();
+        }
+    });
+</script>
+
+</body>
+</html>
+
+
+
