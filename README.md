@@ -8,7 +8,7 @@
 - Built a **Flask-based web server** to allow network-wide access to real-time data via browser
 - Helped improve monitoring transparency on the shop floor
 
-📍 Learn more → [`plc-snap7-flask/README.md`](Internship_TDK_2023-24/3D Scanner Requisition System/README.md)
+📍 ### Learn more → [PLC Snap7 & Flask Project](./plc-snap7-flask/README.md)
 
 ---
 
